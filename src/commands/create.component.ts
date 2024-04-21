@@ -6,25 +6,29 @@ import { IVRPCommand, IVeriParkConfig } from "../models";
 import { ResolveSeq } from "../utils";
 
 const getVeriParkConfig = (): IVeriParkConfig | undefined => {
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length == 1) {
-    const root = workspace.workspaceFolders[0];
-    if (root.name == "Web") {
-      const json = fs.readFileSync(
-        path.join(root.uri.fsPath, "veripark.json"),
-        {
-          flag: "rs",
-          encoding: "utf8",
+  try {
+    if (workspace.workspaceFolders && workspace.workspaceFolders.length == 1) {
+      const root = workspace.workspaceFolders[0];
+      if (root.name == "Web") {
+        const json = fs.readFileSync(
+          path.join(root.uri.fsPath, "veripark.json"),
+          {
+            flag: "rs",
+            encoding: "utf8",
+          }
+        );
+        const config = JSON.parse(json) as IVeriParkConfig;
+        if (config && config.cli) {
+          config.webRoot = root.uri.fsPath;
+          config.cli.path = path.join(root.uri.fsPath, config.cli.path);
         }
-      );
-      const config = JSON.parse(json) as IVeriParkConfig;
-      if (config && config.cli) {
-        config.webRoot = root.uri.fsPath;
-        config.cli.path = path.join(root.uri.fsPath, config.cli.path);
+        return config;
       }
-      return config;
     }
+    return undefined;
+  } catch {
+    return undefined;
   }
-  return undefined;
 };
 const getComponentName = (): Promise<string | undefined> => {
   return new Promise<string | undefined>(async (resolve, reject) => {
@@ -116,19 +120,6 @@ const getComponent = (): Promise<IAngularComponent | undefined> => {
   });
 };
 
-class Messager {
-  constructor() {}
-  info = (message: string) => {
-    window.showInformationMessage(message);
-  };
-  error = (message: string) => {
-    window.showErrorMessage(message);
-  };
-  warning = (message: string) => {
-    window.showWarningMessage(message);
-  };
-}
-
 interface IAngularComponent {
   name: string;
   module: string;
@@ -141,8 +132,7 @@ const CreateComponent: IVRPCommand = {
     if (config) {
       const component = await getComponent();
       if (component) {
-        const messager = new Messager();
-        messager.info(
+        window.showInformationMessage(
           `Creating new component ${component.name} for module [${component.module}]`
         );
 
@@ -164,11 +154,11 @@ const CreateComponent: IVRPCommand = {
         });
         process.stderr.on("data", (data) => {
           console.error(`${data}`);
-          messager.error("An error occured.");
+          window.showErrorMessage("An error occured during CLI process");
         });
         process.on("close", (code) => {
           if (code === 0) {
-            messager.info("Component created successfully.");
+            window.showInformationMessage("Component created successfully");
 
             const name = component.name.toLowerCase();
             const uri = Uri.file(
@@ -186,12 +176,14 @@ const CreateComponent: IVRPCommand = {
               }
             );
           } else {
-            messager.error(
-              `An error occured !!! Process exited with code ${code}`
+            window.showErrorMessage(
+              `An error occured during CLI process : Code ${code}`
             );
           }
         });
       }
+    } else {
+      window.showErrorMessage("An error occured while reading 'veripark.json'");
     }
   },
 };
