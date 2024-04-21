@@ -1,0 +1,50 @@
+{
+  "name": "veripark-vscode-extesion-v1",
+  "displayName": "VeriPark VSCode Extesion v1",
+  "publisher": "VeriPark",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cagricesur/VeriParkVSCodeExtension.git"
+  },
+  "description": "",
+  "icon": "/images/vrp.logo.png",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "veripark-vscode-extesion-v1.create.component",
+        "title": "VeriPark:Create Component"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "vscode:package": "yarn run vscode:prepublish && vsce package",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.88.0",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "@vscode/test-cli": "^0.0.8",
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^2.26.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.3"
+  }
+}
