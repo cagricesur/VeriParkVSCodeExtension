@@ -161,41 +161,32 @@ const CreateComponent: IVRPCommand = {
           parameters.push(`-t${component.transactions.join(",")}`);
         }
 
-        const process = cp.spawn("VeriChannel.CLI", parameters, {
+        const process = cp.spawnSync("VeriChannel.CLI", parameters, {
           cwd: config.cli.path,
         });
-        process.stdout.on("data", (data) => {
-          console.log(`${data}`);
-        });
-        process.stderr.on("data", (data) => {
-          console.error(`${data}`);
-          window.showErrorMessage("An error occured during CLI process");
-        });
-        process.on("close", (code) => {
-          if (code === 0) {
-            window.showInformationMessage("Component created successfully");
+        if (process.status === 0) {
+          window.showInformationMessage("Component created successfully");
 
-            const name = component.name.toLowerCase();
-            const uri = Uri.file(
-              path.join(
-                config.webRoot,
-                `Features\\${component.module}\\Modules\\components\\${name}\\${name}.component.ts`
-              )
-            );
-            workspace.openTextDocument(uri).then(
-              (doc) => {
-                window.showTextDocument(doc);
-              },
-              (reason) => {
-                console.error(`${reason}`);
-              }
-            );
-          } else {
-            window.showErrorMessage(
-              `An error occured during CLI process : Code ${code}`
-            );
-          }
-        });
+          const name = component.name.toLowerCase();
+          const uri = Uri.file(
+            path.join(
+              config.webRoot,
+              `Features\\${component.module}\\Modules\\components\\${name}\\${name}.component.ts`
+            )
+          );
+          workspace.openTextDocument(uri).then(
+            (doc) => {
+              window.showTextDocument(doc);
+            },
+            (reason) => {
+              console.error(`${reason}`);
+            }
+          );
+        } else {
+          window.showErrorMessage(
+            `An error occured during CLI process : Code ${process.status}`
+          );
+        }
       }
     } else {
       window.showErrorMessage("An error occured while reading 'veripark.json'");
