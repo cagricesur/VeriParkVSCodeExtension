@@ -30,6 +30,21 @@ const getVeriParkConfig = (): IVeriParkConfig | undefined => {
     return undefined;
   }
 };
+
+const updateConfig = (): IVeriParkConfig | undefined => {
+  const config = getVeriParkConfig();
+  if (config) {
+    const parameters = ["update-config", `-r${config.webRoot}`];
+    const process = cp.spawnSync("VeriChannel.CLI", parameters, {
+      cwd: config.cli.path,
+    });
+    if (process.status === 0) {
+      return getVeriParkConfig();
+    }
+  }
+  return undefined;
+};
+
 const getComponentName = (): Promise<string | undefined> => {
   return new Promise<string | undefined>(async (resolve, reject) => {
     let name = await window.showInputBox({
@@ -128,7 +143,7 @@ interface IAngularComponent {
 const CreateComponent: IVRPCommand = {
   identifier: "veripark-vscode-extesion-v1.create.component",
   callback: async () => {
-    const config = getVeriParkConfig();
+    const config = updateConfig();
     if (config) {
       const component = await getComponent();
       if (component) {
